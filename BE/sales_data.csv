@@ -1,0 +1,16 @@
+Date,Product_ID,SKU,Category,Quantity_Sold,Cost,Price,Stock,Supplier
+2024-01-05,Wireless Earbuds Pro,WEP-001,Audio,15,45,120,50,TechSupply Co.
+2024-01-05,Smart Watch Series 5,SWS-005,Wearables,25,120,250,80,WearableTech Ltd.
+2024-01-05,Fast Charger 65W,CHR-003,Chargers,40,15,35,100,PowerTech Co.
+2024-01-05,Screen Protector Glass,SPG-003,Accessories,80,3,10,200,ScreenGuard Co.
+2024-01-05,Phone Case - Blue,PC-BLU,Accessories,10,5,20,480,PhoneCases Inc.
+2024-01-11,Wireless Earbuds Pro,WEP-001,Audio,20,45,120,40,TechSupply Co.
+2024-02-28,Smart Watch Series 5,SWS-005,Wearables,30,120,250,60,WearableTech Ltd.
+2024-02-20,Fast Charger 65W,CHR-003,Chargers,50,15,35,50,PowerTech Co.
+2024-02-05,Screen Protector Glass,SPG-003,Accessories,100,3,10,120,ScreenGuard Co.
+2024-02-05,Phone Case - Blue,PC-BLU,Accessories,10,5,20,470,PhoneCases Inc.
+2024-03-15,Wireless Earbuds Pro,WEP-001,Audio,25,45,120,12,TechSupply Co.
+2024-03-12,Smart Watch Series 5,SWS-005,Wearables,35,120,250,35,WearableTech Ltd.
+2024-03-13,Fast Charger 65W,CHR-003,Chargers,60,15,35,0,PowerTech Co.
+2024-03-10,Screen Protector Glass,SPG-003,Accessories,120,3,10,10,ScreenGuard Co.
+2026-03-14,Phone Case - Blue,PC-BLU,Accessories,10,5,20,450,PhoneCases Inc.
