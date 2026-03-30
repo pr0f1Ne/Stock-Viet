@@ -133,9 +133,13 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
+origins = [
+    "http://localhost:5173", # Cho lúc chạy ở máy
+    "https://stock-viet.vercel.app", # Điền chính xác tên miền Vercel Frontend của bạn vào đây
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
