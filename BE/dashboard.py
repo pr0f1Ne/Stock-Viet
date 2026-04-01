@@ -4,6 +4,7 @@ import requests
 import statistics
 import time
 import shutil
+import uuid # 1. BẮT BUỘC thêm dòng này ở đầu file
 from datetime import datetime, date, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Header, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +18,7 @@ from google.auth.transport import requests as google_requests
 from pydantic import BaseModel
 from typing import Optional
 from pydantic import BaseModel
+
 # CHỈ IMPORT TỪ DATABASE, TUYỆT ĐỐI KHÔNG ĐỊNH NGHĨA LẠI BẢNG Ở ĐÂY
 from database import SessionLocal, Product, Sale, Order, User
 
@@ -133,7 +135,9 @@ async def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)):
         user = db.query(User).filter(User.email == idinfo["email"]).first()
         
         if not user:
+            new_user_id = str(uuid.uuid4())
             user = User(
+                id=new_user_id,
                 email=idinfo["email"],
                 name=idinfo.get("name"),
                 picture=idinfo.get("picture")
