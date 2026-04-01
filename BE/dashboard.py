@@ -46,6 +46,54 @@ def get_current_user(x_user_id: str = Header(None), db: Session = Depends(get_db
 os.makedirs("uploads", exist_ok=True) # Tự động tạo thư mục 'uploads' nếu chưa có
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads") # Mở cửa cho Web đọc ảnh trong thư mục này
 
+
+def create_sample_data_for_new_user(user_id: int, db):
+    """Hàm tự động tạo dữ liệu mẫu cho người dùng mới"""
+    
+    # 1. Tạo danh sách sản phẩm mẫu
+    sample_products = [
+        Product(
+            user_id=user_id, # RẤT QUAN TRỌNG: Gắn đúng ID của người dùng mới
+            sku="SKU-101",
+            name="Wireless Gaming Mouse",
+            category="Electronics",
+            currentStock=150,
+            unitCost=25.50,
+            image="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200",
+            supplier="TechGear VN"
+        ),
+        Product(
+            user_id=user_id,
+            sku="SKU-102",
+            name="Mechanical Keyboard Pro",
+            category="Electronics",
+            currentStock=45,
+            unitCost=85.00,
+            image="https://images.unsplash.com/photo-1595225476474-87563907a212?w=200",
+            supplier="KeyChron"
+        ),
+        Product(
+            user_id=user_id,
+            sku="SKU-103",
+            name="Ergonomic Office Chair",
+            category="Furniture",
+            currentStock=12,
+            unitCost=120.00,
+            image="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=200",
+            supplier="HomeFit"
+        )
+    ]
+    
+    # 2. Bạn có thể tạo thêm Order mẫu tương tự ở đây
+    # sample_orders = [ Order(user_id=user_id, orderNumber="ORD-001", ...), ... ]
+
+    # 3. Thêm tất cả vào Database và lưu lại
+    db.add_all(sample_products)
+    # db.add_all(sample_orders)
+    
+    db.commit()
+    print(f"Đã tạo dữ liệu mẫu thành công cho User ID: {user_id}")
+
 # 1. Định nghĩa khuôn dữ liệu Frontend gửi lên (KHÔNG ĐƯỢC TRÙNG TÊN VỚI BẢNG DATABASE)
 class ProductCreate(BaseModel):
     sku: str
@@ -69,38 +117,32 @@ class ProductUpdate(BaseModel):
 
 # API Đăng nhập / Đăng ký
 @app.post("/api/auth/google")
-def google_login(req: GoogleAuthRequest, db: Session = Depends(get_db)):
-    try:
-        # 1. Giải mã và xác thực Token với Google
-        idinfo = id_token.verify_oauth2_token(req.credential, google_requests.Request(), GOOGLE_CLIENT_ID)
+async def google_auth(request: Request, db: Session = Depends(get_db)):
+    # ... (Code nhận và giải mã token của bạn giữ nguyên) ...
+    
+    # Kiểm tra xem email này đã có trong DB chưa
+    user = db.query(User).filter(User.email == user_info["email"]).first()
+    
+    if not user:
+        # NẾU LÀ USER MỚI HOÀN TOÀN: Tạo tài khoản
+        user = User(
+            email=user_info["email"],
+            name=user_info.get("name"),
+            picture=user_info.get("picture")
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user) # Lấy ID mới vừa được tạo
         
-        google_id = idinfo['sub']
-        email = idinfo['email']
-        name = idinfo.get('name', '')
-        picture = idinfo.get('picture', '')
+        # ---> GỌI HÀM BƠM DỮ LIỆU MẪU Ở ĐÂY <---
+        try:
+            create_sample_data_for_new_user(user.id, db)
+        except Exception as e:
+            print(f"Lỗi khi tạo dữ liệu mẫu: {e}")
+            db.rollback() # Nếu tạo dữ liệu mẫu lỗi thì bỏ qua, không làm sập tiến trình đăng nhập
 
-        # 2. Kiểm tra xem User này đã có trong Database chưa
-        user = db.query(User).filter(User.email == email).first()
-        
-        # 3. Nếu chưa có (Người dùng mới) -> Đăng ký lưu vào Database
-        if not user:
-            user = User(id=google_id, email=email, name=name, picture=picture)
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-
-        # 4. Trả thông tin user về cho Frontend
-        return {
-            "message": "Đăng nhập thành công",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "picture": user.picture
-            }
-        }
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Token Google không hợp lệ hoặc đã hết hạn!")
+    # ... (Code tạo session/token và trả về giữ nguyên) ...
+    return {"user": user, "message": "Login success"}
 
 # --- API ĐĂNG XUẤT ---
 @app.post("/api/auth/logout")
