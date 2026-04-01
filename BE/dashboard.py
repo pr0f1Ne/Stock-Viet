@@ -120,22 +120,19 @@ class ProductUpdate(BaseModel):
 @app.post("/api/auth/google")
 async def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)):
     try:
-        # Lấy token từ React gửi lên
         token = data.credential 
         
-        # Xác thực với Google
-        # Lưu ý: requests.Request() ở đây là của thư viện google.auth.transport
+        # 3. DÙNG google_requests THAY VÌ requests THÔNG THƯỜNG
         idinfo = id_token.verify_oauth2_token(
             token, 
-            requests.Request(), 
-            "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleusercontent.com" # Thay bằng Client ID của bạn nếu cần
+            google_requests.Request(),  # <--- Sửa chính xác chỗ này
+            "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleusercontent.com"
         )
         
-        # Kiểm tra xem user có trong DB chưa
+        # 4. Lưu User và tạo dữ liệu mẫu
         user = db.query(User).filter(User.email == idinfo["email"]).first()
         
         if not user:
-            # Nếu là User mới -> Tạo tài khoản
             user = User(
                 email=idinfo["email"],
                 name=idinfo.get("name"),
@@ -145,22 +142,15 @@ async def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(user)
             
-            # --- CHỖ NÀY LÀ ĐỂ GỌI HÀM TẠO DỮ LIỆU MẪU CỦA BẠN (nếu có) ---
-            # try:
-            #     create_sample_data_for_new_user(user.id, db)
-            # except Exception as e:
-            #     print("Lỗi tạo dữ liệu mẫu:", e)
-            #     db.rollback()
+            # Hàm bơm dữ liệu mẫu (nhớ đảm bảo tên cột chuẩn xác nhé)
+            # create_sample_data_for_new_user(user.id, db)
             
         return {"user": user, "message": "Login success"}
 
     except ValueError as e:
-        # Token không hợp lệ
         raise HTTPException(status_code=401, detail=f"Token không hợp lệ: {str(e)}")
     except Exception as e:
-        # Bắt các lỗi khác
         raise HTTPException(status_code=500, detail=f"Lỗi Server: {str(e)}")
-
 # --- API ĐĂNG XUẤT ---
 @app.post("/api/auth/logout")
 def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
