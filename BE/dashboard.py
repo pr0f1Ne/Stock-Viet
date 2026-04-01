@@ -50,52 +50,91 @@ os.makedirs("uploads", exist_ok=True) # Tự động tạo thư mục 'uploads' 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads") # Mở cửa cho Web đọc ảnh trong thư mục này
 
 
-def create_sample_data_for_new_user(user_id: int, db):
-    """Hàm tự động tạo dữ liệu mẫu cho người dùng mới"""
-    
-    # 1. Tạo danh sách sản phẩm mẫu
-    sample_products = [
-        Product(
-            user_id=user_id, # RẤT QUAN TRỌNG: Gắn đúng ID của người dùng mới
-            sku="SKU-101",
-            name="Wireless Gaming Mouse",
-            category="Electronics",
-            stock=150,
-            unitCost=25.50,
-            imageUrl="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200",
-            supplier="TechGear VN"
-        ),
-        Product(
-            user_id=user_id,
-            sku="SKU-102",
-            name="Mechanical Keyboard Pro",
-            category="Electronics",
-            stock=45,
-            unitCost=85.00,
-            imageUrl="https://images.unsplash.com/photo-1595225476474-87563907a212?w=200",
-            supplier="KeyChron"
-        ),
-        Product(
-            user_id=user_id,
-            sku="SKU-103",
-            name="Ergonomic Office Chair",
-            category="Furniture",
-            stock=12,
-            unitCost=120.00,
-            imageUrl="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=200",
-            supplier="HomeFit"
-        )
-    ]
-    
-    # 2. Bạn có thể tạo thêm Order mẫu tương tự ở đây
-    # sample_orders = [ Order(user_id=user_id, orderNumber="ORD-001", ...), ... ]
+Việc cung cấp sẵn một bộ dữ liệu mẫu (Mock Data) 10-15 sản phẩm đa dạng ngay khi user mới đăng nhập lần đầu là một bước đi cực kỳ chuẩn xác trong thiết kế sản phẩm (Onboarding UX). Nhờ vậy, Dashboard của họ sẽ hiện đầy đủ biểu đồ, cảnh báo tồn kho và hàng hóa ngay lập tức.
 
-    # 3. Thêm tất cả vào Database và lưu lại
-    db.add_all(sample_products)
-    # db.add_all(sample_orders)
+Dưới đây là đoạn code chuẩn chỉnh để tạo 10 sản phẩm mẫu với đủ các trạng thái (Tồn kho cao, sắp hết hàng, giá trị lớn...) giúp Dashboard của user hiển thị đẹp nhất.
+
+Bước 1: Copy hàm tạo Mock Data này vào Backend
+Bạn hãy mở file chứa các API của bạn (ví dụ main.py hoặc dashboard.py), kéo lên phía trên cùng (dưới các dòng import) và dán hàm này vào:
+
+Python
+import uuid # Nếu Product ID của bạn là kiểu String, hãy dùng cái này
+
+def seed_mock_data_for_user(user_id, db):
+    """
+    Hàm tự động tạo 10 sản phẩm mẫu đa dạng cho người dùng mới đăng nhập lần đầu.
+    """
+    mock_products = [
+        {
+            "sku": "SKU-001", "name": "Chuột Gaming Không Dây X Pro", "category": "Electronics", 
+            "stock": 145, "unitCost": 45.00, "supplier": "TechGear VN", 
+            "imageUrl": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200"
+        },
+        {
+            "sku": "SKU-002", "name": "Bàn Phím Cơ RGB Blue Switch", "category": "Electronics", 
+            "stock": 8, "unitCost": 85.00, "supplier": "KeyChron", 
+            "imageUrl": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=200"
+        },
+        {
+            "sku": "SKU-003", "name": "Ghế Công Thái Học Ergonomic", "category": "Furniture", 
+            "stock": 12, "unitCost": 220.00, "supplier": "HomeFit", 
+            "imageUrl": "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=200"
+        },
+        {
+            "sku": "SKU-004", "name": "Cáp Sạc Nhanh Type-C 100W", "category": "Accessories", 
+            "stock": 450, "unitCost": 8.50, "supplier": "PowerTech", 
+            "imageUrl": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=200"
+        },
+        {
+            "sku": "SKU-005", "name": "Tai Nghe Chống Ồn Chủ Động ANC", "category": "Electronics", 
+            "stock": 4, "unitCost": 199.99, "supplier": "AudioMotive", 
+            "imageUrl": "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=200"
+        },
+        {
+            "sku": "SKU-006", "name": "Giá Đỡ Laptop Hợp Kim Nhôm", "category": "Accessories", 
+            "stock": 85, "unitCost": 25.00, "supplier": "DeskSetup", 
+            "imageUrl": "https://images.unsplash.com/photo-1616410011236-7a42121dd981?w=200"
+        },
+        {
+            "sku": "SKU-007", "name": "Màn Hình Siêu Rộng UltraWide 34-inch", "category": "Electronics", 
+            "stock": 3, "unitCost": 450.00, "supplier": "VisionDisplays", 
+            "imageUrl": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=200"
+        },
+        {
+            "sku": "SKU-008", "name": "Webcam Livestream 1080p 60fps", "category": "Accessories", 
+            "stock": 120, "unitCost": 55.00, "supplier": "StreamGear", 
+            "imageUrl": "https://images.unsplash.com/photo-1595350035048-89c02052106e?w=200"
+        },
+        {
+            "sku": "SKU-009", "name": "Bàn Làm Việc Đứng Smart Desk", "category": "Furniture", 
+            "stock": 15, "unitCost": 350.00, "supplier": "HomeFit", 
+            "imageUrl": "https://images.unsplash.com/photo-1595514535415-8aeed30721eb?w=200"
+        },
+        {
+            "sku": "SKU-010", "name": "Loa Bluetooth Mini Chống Nước", "category": "Electronics", 
+            "stock": 210, "unitCost": 35.00, "supplier": "AudioMotive", 
+            "imageUrl": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200"
+        }
+    ]
+
+    # Duyệt qua từng sản phẩm và lưu vào DB
+    for item in mock_products:
+        new_product = Product(
+            # id=str(uuid.uuid4()), # MỞ COMMENT DÒNG NÀY nếu bảng Product của bạn dùng ID dạng chuỗi (String)
+            user_id=user_id,
+            sku=item["sku"],
+            name=item["name"],
+            category=item["category"],
+            stock=item["stock"],           # Đảm bảo tên biến ở đây trùng với Models.py của bạn (có thể là currentStock)
+            unitCost=item["unitCost"],
+            supplier=item["supplier"],
+            imageUrl=item["imageUrl"]      # Đảm bảo tên biến trùng với Models.py (có thể là image)
+        )
+        db.add(new_product)
     
+    # Lưu toàn bộ 10 sản phẩm vào Database cùng 1 lúc
     db.commit()
-    print(f"Đã tạo dữ liệu mẫu thành công cho User ID: {user_id}")
+    print(f"✅ Đã tạo 10 sản phẩm mẫu thành công cho User ID: {user_id}")
 
 # 1. Định nghĩa khuôn dữ liệu Frontend gửi lên (KHÔNG ĐƯỢC TRÙNG TÊN VỚI BẢNG DATABASE)
 class ProductCreate(BaseModel):
@@ -146,9 +185,12 @@ async def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(user)
             
-            # Hàm bơm dữ liệu mẫu (nhớ đảm bảo tên cột chuẩn xác nhé)
-            # create_sample_data_for_new_user(user.id, db)
-            
+            try:
+                seed_mock_data_for_user(user.id, db)
+            except Exception as e:
+                print("Lỗi khi tạo mock data:", e)
+                db.rollback() # Nếu lỗi data mẫu thì bỏ qua, không làm sập tiến trình login của user
+
         return {"user": user, "message": "Login success"}
 
     except ValueError as e:
