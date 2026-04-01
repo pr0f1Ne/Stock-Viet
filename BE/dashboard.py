@@ -118,20 +118,48 @@ class ProductUpdate(BaseModel):
 
 # API Đăng nhập / Đăng ký
 @app.post("/api/auth/google")
-async def google_auth(request_data: GoogleTokenRequest, db: Session = Depends(get_db)):
+async def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)):
     try:
         # Lấy token từ React gửi lên
-        token = request_data.credential 
+        token = data.credential 
         
-        # ... (Từ đoạn này trở xuống, bạn giữ nguyên code giải mã token Google của bạn) ...
-        # Ví dụ: idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        # Xác thực với Google
+        # Lưu ý: requests.Request() ở đây là của thư viện google.auth.transport
+        idinfo = id_token.verify_oauth2_token(
+            token, 
+            requests.Request(), 
+            "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleusercontent.com" # Thay bằng Client ID của bạn nếu cần
+        )
         
-        # ... (Và đoạn code tạo user mẫu lúc nãy) ...
+        # Kiểm tra xem user có trong DB chưa
+        user = db.query(User).filter(User.email == idinfo["email"]).first()
         
+        if not user:
+            # Nếu là User mới -> Tạo tài khoản
+            user = User(
+                email=idinfo["email"],
+                name=idinfo.get("name"),
+                picture=idinfo.get("picture")
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            
+            # --- CHỖ NÀY LÀ ĐỂ GỌI HÀM TẠO DỮ LIỆU MẪU CỦA BẠN (nếu có) ---
+            # try:
+            #     create_sample_data_for_new_user(user.id, db)
+            # except Exception as e:
+            #     print("Lỗi tạo dữ liệu mẫu:", e)
+            #     db.rollback()
+            
+        return {"user": user, "message": "Login success"}
+
+    except ValueError as e:
+        # Token không hợp lệ
+        raise HTTPException(status_code=401, detail=f"Token không hợp lệ: {str(e)}")
     except Exception as e:
-        print("Lỗi xác thực Google:", e)
-        # Bắt buộc trả về lỗi nếu có để Frontend biết
-        raise HTTPException(status_code=400, detail=str(e))
+        # Bắt các lỗi khác
+        raise HTTPException(status_code=500, detail=f"Lỗi Server: {str(e)}")
 
 # --- API ĐĂNG XUẤT ---
 @app.post("/api/auth/logout")
