@@ -49,17 +49,6 @@ def get_current_user(x_user_id: str = Header(None), db: Session = Depends(get_db
 os.makedirs("uploads", exist_ok=True) # Tự động tạo thư mục 'uploads' nếu chưa có
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads") # Mở cửa cho Web đọc ảnh trong thư mục này
 
-
-Việc cung cấp sẵn một bộ dữ liệu mẫu (Mock Data) 10-15 sản phẩm đa dạng ngay khi user mới đăng nhập lần đầu là một bước đi cực kỳ chuẩn xác trong thiết kế sản phẩm (Onboarding UX). Nhờ vậy, Dashboard của họ sẽ hiện đầy đủ biểu đồ, cảnh báo tồn kho và hàng hóa ngay lập tức.
-
-Dưới đây là đoạn code chuẩn chỉnh để tạo 10 sản phẩm mẫu với đủ các trạng thái (Tồn kho cao, sắp hết hàng, giá trị lớn...) giúp Dashboard của user hiển thị đẹp nhất.
-
-Bước 1: Copy hàm tạo Mock Data này vào Backend
-Bạn hãy mở file chứa các API của bạn (ví dụ main.py hoặc dashboard.py), kéo lên phía trên cùng (dưới các dòng import) và dán hàm này vào:
-
-Python
-import uuid # Nếu Product ID của bạn là kiểu String, hãy dùng cái này
-
 def seed_mock_data_for_user(user_id, db):
     """
     Hàm tự động tạo 10 sản phẩm mẫu đa dạng cho người dùng mới đăng nhập lần đầu.
