@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, Bell, ChevronDown, User, LogOut, AlertTriangle, PackageX, Clock, Loader2 } from "lucide-react"; // Thêm Loader2 cho hiệu ứng xoay
+import { Search, Bell, ChevronDown, User, LogOut, AlertTriangle, PackageX, Clock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 interface Notification {
   id: string;
@@ -16,28 +18,25 @@ interface Notification {
 export function TopBar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false); // Trạng thái đang đăng xuất
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const notificationDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // --- LẤY THÔNG TIN USER TỪ LOCALSTORAGE ---
   const userStr = localStorage.getItem("user");
   const currentUser = userStr ? JSON.parse(userStr) : null;
 
-  // --- HÀM XỬ LÝ ĐĂNG XUẤT CÓ KẾT NỐI API ---
   const handleLogout = async () => {
     setIsLoggingOut(true);
     
     try {
-      // Cách viết này chiều lòng TypeScript 100%
       const headers: Record<string, string> = {};
       if (currentUser && currentUser.id) {
         headers["X-User-ID"] = String(currentUser.id);
       }
       
-      await fetch("http://localhost:8000/api/auth/logout", {
+      await fetch(`${API_URL}/api/auth/logout`, {
         method: "POST",
         headers: headers
       });
@@ -47,7 +46,7 @@ export function TopBar() {
     } finally {
       localStorage.removeItem("user");
       localStorage.removeItem("isAuthenticated");
-      window.location.href = "/login"; 
+      navigate("/login"); // Chuyển trang mượt mà bằng React Router
     }
   };
 
@@ -98,7 +97,6 @@ export function TopBar() {
 
   return (
     <div className="h-16 bg-white border-b border-[#e2e8f0] flex items-center justify-between px-8 fixed top-0 right-0 left-60 z-10">
-      {/* Search Bar */}
       <div className="flex-1 max-w-xl">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -110,9 +108,7 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Right Section */}
       <div className="flex items-center gap-4">
-        {/* Notifications */}
         <div className="relative" ref={notificationDropdownRef}>
           <button
             onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
@@ -126,7 +122,6 @@ export function TopBar() {
             )}
           </button>
 
-          {/* Notification Dropdown */}
           {showNotificationDropdown && (
             <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg border border-slate-200 shadow-lg z-50 max-h-[500px] overflow-hidden flex flex-col">
               <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
@@ -184,13 +179,11 @@ export function TopBar() {
           )}
         </div>
 
-        {/* User Menu - ĐÃ ĐƯỢC CẬP NHẬT HIỂN THỊ DỮ LIỆU THẬT */}
         <div className="relative" ref={profileDropdownRef}>
           <button
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
             className="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 rounded-lg px-3 py-2 transition-colors"
           >
-            {/* Hiển thị Avatar của Google, nếu không có thì hiển thị chữ cái đầu của Tên */}
             {currentUser?.picture ? (
               <img src={currentUser.picture} alt="Avatar" className="w-8 h-8 rounded-full border border-slate-200 object-cover" />
             ) : (
@@ -206,7 +199,6 @@ export function TopBar() {
             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Dropdown Menu */}
           {showProfileDropdown && (
             <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg border border-slate-200 shadow-lg py-2 z-50">
               <button
@@ -218,7 +210,6 @@ export function TopBar() {
               </button>
               <div className="my-1 border-t border-slate-200"></div>
               
-              {/* NÚT ĐĂNG XUẤT ĐÃ ĐƯỢC NỐI API */}
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
