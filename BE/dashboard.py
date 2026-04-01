@@ -118,31 +118,20 @@ class ProductUpdate(BaseModel):
 
 # API Đăng nhập / Đăng ký
 @app.post("/api/auth/google")
-async def google_auth(request_data: GoogleAuthRequest, db: Session = Depends(get_db)):
-    # ... (Code nhận và giải mã token của bạn giữ nguyên) ...
-    token = request_data.credential
-    # Kiểm tra xem email này đã có trong DB chưa
-    user = db.query(User).filter(User.email == user_info["email"]).first()
-    if not user:
-        # NẾU LÀ USER MỚI HOÀN TOÀN: Tạo tài khoản
-        user = User(
-            email=user_info["email"],
-            name=user_info.get("name"),
-            picture=user_info.get("picture")
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user) # Lấy ID mới vừa được tạo
+async def google_auth(request_data: GoogleTokenRequest, db: Session = Depends(get_db)):
+    try:
+        # Lấy token từ React gửi lên
+        token = request_data.credential 
         
-        # ---> GỌI HÀM BƠM DỮ LIỆU MẪU Ở ĐÂY <---
-        try:
-            create_sample_data_for_new_user(user.id, db)
-        except Exception as e:
-            print(f"Lỗi khi tạo dữ liệu mẫu: {e}")
-            db.rollback() # Nếu tạo dữ liệu mẫu lỗi thì bỏ qua, không làm sập tiến trình đăng nhập
-
-    # ... (Code tạo session/token và trả về giữ nguyên) ...
-    return {"user": user, "message": "Login success"}
+        # ... (Từ đoạn này trở xuống, bạn giữ nguyên code giải mã token Google của bạn) ...
+        # Ví dụ: idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        
+        # ... (Và đoạn code tạo user mẫu lúc nãy) ...
+        
+    except Exception as e:
+        print("Lỗi xác thực Google:", e)
+        # Bắt buộc trả về lỗi nếu có để Frontend biết
+        raise HTTPException(status_code=400, detail=str(e))
 
 # --- API ĐĂNG XUẤT ---
 @app.post("/api/auth/logout")
