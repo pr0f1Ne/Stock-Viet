@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useState } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const GOOGLE_CLIENT_ID = "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleusercontent.com";
 
 export function LoginPage() {
@@ -12,7 +13,7 @@ export function LoginPage() {
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
-      const res = await fetch("http://localhost:8000/api/auth/google", {
+      const res = await fetch(`${API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credential: credentialResponse.credential }),
@@ -24,17 +25,12 @@ export function LoginPage() {
       
       const data = await res.json();
       
-      // 1. Lưu thông tin người dùng
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("isAuthenticated", "true");
       
-      // 2. Lấy tên người dùng để hiển thị vào Popup
       setUserName(data.user.name);
-
-      // 3. Hiển thị Popup Modal giữa màn hình (Không dùng Alert/Console log nữa)
       setShowSuccessModal(true);
       
-      // 4. Tự động chuyển vào Dashboard sau 2.5 giây
       setTimeout(() => {
         window.location.href = "/"; 
       }, 2500);
@@ -47,7 +43,6 @@ export function LoginPage() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155]">
-        {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-20 w-96 h-96 bg-[#2563eb] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
           <div className="absolute top-40 right-20 w-96 h-96 bg-[#10b981] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -55,10 +50,8 @@ export function LoginPage() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20"></div>
         </div>
 
-        {/* Content */}
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
           <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center">
-            {/* Left Side */}
             <div className="text-white space-y-8">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1e40af] flex items-center justify-center shadow-lg shadow-blue-500/50">
@@ -103,7 +96,6 @@ export function LoginPage() {
               </div>
             </div>
 
-            {/* Right Side - Form */}
             <div className="w-full max-w-md mx-auto">
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8 space-y-6">
                 <div className="text-center space-y-2">
@@ -135,7 +127,6 @@ export function LoginPage() {
           </div>
         </div>
 
-        {/* --- POPUP MODAL CHUẨN FIGMA --- */}
         {showSuccessModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm p-4 animate-fade-in-down">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">

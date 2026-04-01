@@ -2,9 +2,10 @@ import { LineChart, Line, Area, ComposedChart, XAxis, YAxis, CartesianGrid, Tool
 import { TrendingUp, Calculator, Activity } from "lucide-react";
 import { useState, useEffect } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 export function AnalyticsPage() {
   const [selectedEoqProduct, setSelectedEoqProduct] = useState("");
-  // State mới dành riêng cho biểu đồ Dự báo
   const [forecastSku, setForecastSku] = useState("all");
   
   const [salesForecastData, setSalesForecastData] = useState<any[]>([]);
@@ -15,7 +16,6 @@ export function AnalyticsPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isForecastLoading, setIsForecastLoading] = useState(false);
 
-  // HÀM LẤY USER ID TỪ LOCALSTORAGE ĐỂ GỬI LÊN BACKEND
   const getUserHeader = (): Record<string, string> => {
     const headers: Record<string, string> = {};
     const userStr = localStorage.getItem("user");
@@ -26,11 +26,10 @@ export function AnalyticsPage() {
     return headers;
   };
 
-  // 1. TẢI DỮ LIỆU NỀN VÀ HEATMAP (Chạy 1 lần khi mở trang)
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:8000/api/eoq", { headers: getUserHeader() }),
-      fetch("http://localhost:8000/api/heatmap", { headers: getUserHeader() })
+      fetch(`${API_URL}/api/eoq`, { headers: getUserHeader() }),
+      fetch(`${API_URL}/api/heatmap`, { headers: getUserHeader() })
     ])
     .then(async ([resEoq, resHeatmap]) => {
       const eoq = await resEoq.json();
@@ -50,10 +49,9 @@ export function AnalyticsPage() {
     });
   }, []);
 
-  // 2. TẢI DỮ LIỆU DỰ BÁO (Chạy lại mỗi khi bạn đổi Bộ lọc Sản phẩm)
   useEffect(() => {
     setIsForecastLoading(true);
-    fetch(`http://localhost:8000/api/forecast?sku=${forecastSku}`, { headers: getUserHeader() })
+    fetch(`${API_URL}/api/forecast?sku=${forecastSku}`, { headers: getUserHeader() })
       .then(res => res.json())
       .then(data => {
         setSalesForecastData(data);
@@ -84,7 +82,6 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 mb-1">Predictive Analytics</h1>
         <p className="text-sm text-slate-600">
@@ -92,7 +89,6 @@ export function AnalyticsPage() {
         </p>
       </div>
 
-      {/* Section 1: Sales Forecast (Đã thêm Bộ lọc) */}
       <div className="bg-white rounded-lg p-6 border border-[#e2e8f0] shadow-sm">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
@@ -103,7 +99,6 @@ export function AnalyticsPage() {
             <p className="text-sm text-slate-600">12-month prediction view based on AI Linear Regression</p>
           </div>
           
-          {/* NÚT LỌC SẢN PHẨM CHO BIỂU ĐỒ DỰ BÁO */}
           <select
             value={forecastSku}
             onChange={(e) => setForecastSku(e.target.value)}
@@ -149,7 +144,6 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Section 2: EOQ Calculator */}
       <div className="bg-white rounded-lg p-6 border border-[#e2e8f0] shadow-sm">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
@@ -211,7 +205,6 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Section 3: Demand Pattern Heat Map */}
       <div className="bg-white rounded-lg p-6 border border-[#e2e8f0] shadow-sm">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center">

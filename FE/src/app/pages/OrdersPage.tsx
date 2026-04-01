@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Package, Clock, CheckCircle, XCircle, DollarSign, TrendingUp, Search, Filter } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 interface Order {
   id: string;
   orderNumber: string;
@@ -16,11 +18,9 @@ export function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   
-  // State lưu danh sách đơn hàng từ API
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Lấy User ID để gửi xuống Backend
   const getUserHeader = (): Record<string, string> => {
     const headers: Record<string, string> = {};
     const userStr = localStorage.getItem("user");
@@ -31,16 +31,15 @@ export function OrdersPage() {
     return headers;
   };
 
-  // GỌI API LẤY DANH SÁCH ĐƠN HÀNG
   useEffect(() => {
     setIsLoading(true);
-    fetch("http://localhost:8000/api/orders", { headers: getUserHeader() })
+    fetch(`${API_URL}/api/orders`, { headers: getUserHeader() })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           setOrders(data);
         } else {
-          setOrders([]); // Tránh sập UI nếu Backend báo lỗi
+          setOrders([]); 
         }
         setIsLoading(false);
       })
@@ -102,7 +101,6 @@ export function OrdersPage() {
         <p className="text-sm text-slate-600">Track and manage your customer orders</p>
       </div>
 
-      {/* Toolbar */}
       <div className="bg-white rounded-lg p-6 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1">
           <div className="flex-1 max-w-md relative">
@@ -133,7 +131,6 @@ export function OrdersPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">

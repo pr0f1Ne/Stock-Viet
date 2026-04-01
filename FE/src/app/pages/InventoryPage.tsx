@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Search, Filter, Download, Plus, Edit, Package, X, UploadCloud, Trash2, CheckCircle2, AlertTriangle } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 interface Product {
   id: string; image: string; sku: string; name: string; category: string;
   currentStock: number; unitCost: number; totalValue: number;
@@ -50,7 +52,6 @@ export function InventoryPage() {
     }, 3000);
   };
 
-  // --- HÀM XÓA BỘ LỌC ---
   const handleClearFilters = () => {
     setSearchTerm("");
     setCategoryFilter("all");
@@ -59,7 +60,7 @@ export function InventoryPage() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/inventory/filters", { headers: getUserHeader() })
+    fetch(`${API_URL}/api/inventory/filters`, { headers: getUserHeader() })
       .then(res => res.json())
       .then(data => setFilterOptions(data))
       .catch(err => console.error(err));
@@ -74,24 +75,23 @@ export function InventoryPage() {
     if (supplierFilter !== "all") params.append("supplier", supplierFilter);
 
     const delay = setTimeout(() => {
-      fetch(`http://localhost:8000/api/inventory?${params.toString()}`, { headers: getUserHeader() })
+      fetch(`${API_URL}/api/inventory?${params.toString()}`, { headers: getUserHeader() })
         .then(res => {
           if (!res.ok) throw new Error("Chưa đăng nhập hoặc phiên hết hạn!");
           return res.json();
         })
         .then(data => { 
-          // FIX LỖI REDUCE Ở ĐÂY: Chỉ setProducts khi data là mảng
           if (Array.isArray(data)) {
             setProducts(data);
           } else {
             console.error("Dữ liệu trả về không phải là mảng:", data);
-            setProducts([]); // Gán mảng rỗng để không sập web
+            setProducts([]); 
           }
           setIsLoading(false); 
         })
         .catch(err => { 
           console.error(err); 
-          setProducts([]); // Lỗi mạng cũng set mảng rỗng
+          setProducts([]); 
           setIsLoading(false); 
         });
     }, 300);
@@ -113,8 +113,8 @@ export function InventoryPage() {
       };
 
       const apiUrl = isEditing 
-        ? `http://localhost:8000/api/inventory/products/${newProduct.sku}`
-        : "http://localhost:8000/api/inventory/products";
+        ? `${API_URL}/api/inventory/products/${newProduct.sku}`
+        : `${API_URL}/api/inventory/products`;
       const apiMethod = isEditing ? "PUT" : "POST";
 
       const res = await fetch(apiUrl, {
@@ -145,7 +145,7 @@ export function InventoryPage() {
 
     setIsUploading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/upload-image", { method: "POST", body: formData });
+      const res = await fetch(`${API_URL}/api/upload-image`, { method: "POST", body: formData });
       if (!res.ok) throw new Error("Tải ảnh thất bại");
       const data = await res.json();
       setNewProduct({...newProduct, imageUrl: data.imageUrl});
@@ -186,7 +186,7 @@ export function InventoryPage() {
   const handleDelete = async (sku: string) => {
     if (window.confirm(`⚠️ Bạn có chắc chắn muốn xóa sản phẩm mã ${sku} không? Hành động này không thể hoàn tác!`)) {
       try {
-        const res = await fetch(`http://localhost:8000/api/inventory/products/${sku}`, {
+        const res = await fetch(`${API_URL}/api/inventory/products/${sku}`, {
           method: "DELETE",
           headers: getUserHeader()
         });
@@ -219,7 +219,6 @@ export function InventoryPage() {
     );
   };
 
-  // Biến kiểm tra xem có đang dùng bộ lọc nào không
   const isFiltering = searchTerm !== "" || categoryFilter !== "all" || statusFilter !== "all" || supplierFilter !== "all";
 
   return (
@@ -276,7 +275,6 @@ export function InventoryPage() {
               {filterOptions.suppliers?.map((s) => (<option key={s} value={s}>{s === "all" ? "All Suppliers" : s}</option>))}
             </select>
 
-            {/* --- NÚT XÓA BỘ LỌC TỰ ĐỘNG HIỆN --- */}
             {isFiltering && (
               <button 
                 onClick={handleClearFilters}

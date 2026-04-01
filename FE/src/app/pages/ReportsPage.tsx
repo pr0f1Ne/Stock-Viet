@@ -5,6 +5,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 export function ReportsPage() {
   const [monthlySales, setMonthlySales] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
@@ -22,7 +24,7 @@ export function ReportsPage() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/reports", { headers: getUserHeader() })
+    fetch(`${API_URL}/api/reports`, { headers: getUserHeader() })
       .then(res => res.json())
       .then(data => {
         setMonthlySales(data.monthlySales || []);
@@ -42,7 +44,6 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 mb-1">Reports & Analytics</h1>
@@ -58,7 +59,6 @@ export function ReportsPage() {
         </div>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -121,9 +121,7 @@ export function ReportsPage() {
         </div>
       </div>
 
-      {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Overview */}
         <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900 mb-6">Revenue & Profit Overview</h3>
           <div className="h-80">
@@ -141,7 +139,6 @@ export function ReportsPage() {
           </div>
         </div>
 
-        {/* Category Performance */}
         <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900 mb-6">Sales by Category</h3>
           <div className="h-80 flex items-center">
@@ -160,7 +157,6 @@ export function ReportsPage() {
         </div>
       </div>
 
-      {/* Top Products Table */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-200">
           <h3 className="text-lg font-semibold text-slate-900">Top Performing Products</h3>

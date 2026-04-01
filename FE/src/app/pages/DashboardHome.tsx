@@ -5,13 +5,14 @@ import { TopBottomPerformers } from "../components/TopBottomPerformers";
 import { ReorderRecommendations } from "../components/ReorderRecommendations"
 import { CheckCircle2, X, Sparkles } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 export function DashboardHome() {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLoginSuccessPopup, setShowLoginSuccessPopup] = useState(false);
   const [userName, setUserName] = useState("Người dùng");
 
-  // 1. Logic kiểm tra Popup và lấy Tên User
   useEffect(() => {
     const shouldShow = localStorage.getItem("showLoginSuccessNotify");
     const userStr = localStorage.getItem("user");
@@ -29,13 +30,11 @@ export function DashboardHome() {
     }
   }, []);
 
-  // 2. Logic gọi API lấy dữ liệu Dashboard CÓ GẮN HEADER X-User-ID
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
         
-        // --- TẠO HEADER CHỨA USER ID ---
         const userStr = localStorage.getItem("user");
         const headers: Record<string, string> = {};
         if (userStr) {
@@ -45,23 +44,20 @@ export function DashboardHome() {
           }
         }
         
-        // 1. GỌI ĐÚNG VÀ ĐỦ 5 API CÙNG LÚC (Đã đính kèm headers)
         const [summaryRes, topRes, bottomRes, alertsRes, reorderRes] = await Promise.all([
-          fetch("http://localhost:8000/api/summary", { headers }),
-          fetch("http://localhost:8000/api/top-products", { headers }),
-          fetch("http://localhost:8000/api/bottom-products", { headers }), 
-          fetch("http://localhost:8000/api/critical-alerts", { headers }),
-          fetch("http://localhost:8000/api/reorder-recommendations", { headers })
+          fetch(`${API_URL}/api/summary`, { headers }),
+          fetch(`${API_URL}/api/top-products`, { headers }),
+          fetch(`${API_URL}/api/bottom-products`, { headers }), 
+          fetch(`${API_URL}/api/critical-alerts`, { headers }),
+          fetch(`${API_URL}/api/reorder-recommendations`, { headers })
         ]);
 
-        // 2. GIẢI MÃ DỮ LIỆU JSON
         const summaryData = await summaryRes.json();
         const topProductsData = await topRes.json();
         const bottomProductsData = await bottomRes.json(); 
         const alertsData = await alertsRes.json();
         const reordersData = await reorderRes.json();
         
-        // 3. ĐÓNG GÓI VÀO KHO CHỨA
         setDashboardData({
           summary: summaryData,
           topProducts: topProductsData,
@@ -83,7 +79,6 @@ export function DashboardHome() {
     <div className="space-y-6">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-slate-900 mb-1">Dashboard</h1>
-        {/* Đã sửa thành tên User động thay vì John */}
         <p className="text-sm text-slate-600">
           Xin chào, {userName}! Đây là tổng quan kho hàng của bạn ngày hôm nay.
         </p>
@@ -94,20 +89,15 @@ export function DashboardHome() {
       ) : (
         <>
           <InventoryHealthOverview data={dashboardData?.summary} />
-          
           <CriticalAlerts alertsData={dashboardData?.alerts} />
-          
-          {/* TRUYỀN CẢ TOP VÀ BOTTOM XUỐNG BẢNG */}
           <TopBottomPerformers 
             topData={dashboardData?.topProducts} 
             bottomData={dashboardData?.bottomProducts} 
           />
-          
           <ReorderRecommendations reorderData={dashboardData?.reorders} />
         </>
       )}
 
-      {/* POPUP THÔNG BÁO */}
       {showLoginSuccessPopup && (
         <div className="fixed top-20 right-8 z-50 animate-fade-in-down">
           <div className="bg-[#10b981] border border-[#059669] text-white p-5 rounded-2xl shadow-2xl flex items-start gap-4 w-[400px] relative overflow-hidden">
