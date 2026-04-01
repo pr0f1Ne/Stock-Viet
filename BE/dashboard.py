@@ -16,6 +16,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from pydantic import BaseModel
 from typing import Optional
+from pydantic import BaseModel
 # CHỈ IMPORT TỪ DATABASE, TUYỆT ĐỐI KHÔNG ĐỊNH NGHĨA LẠI BẢNG Ở ĐÂY
 from database import SessionLocal, Product, Sale, Order, User
 
@@ -57,9 +58,9 @@ def create_sample_data_for_new_user(user_id: int, db):
             sku="SKU-101",
             name="Wireless Gaming Mouse",
             category="Electronics",
-            currentStock=150,
+            stock=150,
             unitCost=25.50,
-            image="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200",
+            imageUrl="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200",
             supplier="TechGear VN"
         ),
         Product(
@@ -67,9 +68,9 @@ def create_sample_data_for_new_user(user_id: int, db):
             sku="SKU-102",
             name="Mechanical Keyboard Pro",
             category="Electronics",
-            currentStock=45,
+            stock=45,
             unitCost=85.00,
-            image="https://images.unsplash.com/photo-1595225476474-87563907a212?w=200",
+            imageUrl="https://images.unsplash.com/photo-1595225476474-87563907a212?w=200",
             supplier="KeyChron"
         ),
         Product(
@@ -77,9 +78,9 @@ def create_sample_data_for_new_user(user_id: int, db):
             sku="SKU-103",
             name="Ergonomic Office Chair",
             category="Furniture",
-            currentStock=12,
+            stock=12,
             unitCost=120.00,
-            image="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=200",
+            imageUrl="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=200",
             supplier="HomeFit"
         )
     ]
@@ -117,12 +118,11 @@ class ProductUpdate(BaseModel):
 
 # API Đăng nhập / Đăng ký
 @app.post("/api/auth/google")
-async def google_auth(request: Request, db: Session = Depends(get_db)):
+async def google_auth(request_data: GoogleAuthRequest, db: Session = Depends(get_db)):
     # ... (Code nhận và giải mã token của bạn giữ nguyên) ...
-    
+    token = request_data.credential
     # Kiểm tra xem email này đã có trong DB chưa
     user = db.query(User).filter(User.email == user_info["email"]).first()
-    
     if not user:
         # NẾU LÀ USER MỚI HOÀN TOÀN: Tạo tài khoản
         user = User(
