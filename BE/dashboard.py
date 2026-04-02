@@ -18,7 +18,8 @@ from google.auth.transport import requests as google_requests
 from pydantic import BaseModel
 from typing import Optional
 from pydantic import BaseModel
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 # CHỈ IMPORT TỪ DATABASE, TUYỆT ĐỐI KHÔNG ĐỊNH NGHĨA LẠI BẢNG Ở ĐÂY
 from database import SessionLocal, Product, Sale, Order, User
 
