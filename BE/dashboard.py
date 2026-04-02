@@ -765,3 +765,93 @@ def get_reports_data(x_user_id: str = Header(None), db: Session = Depends(get_db
         "categoryData": category_data if category_data else [{"name": "Chưa có", "value": 100, "color": "#cbd5e1"}],
         "monthlySales": monthly_sales
     }
+
+@app.get("/api/admin/seed-all-users")
+async def seed_all_users_mock_data(db: Session = Depends(get_db)):
+    """
+    API dùng 1 lần để tạo dữ liệu mẫu cho toàn bộ user trong hệ thống.
+    """
+    # 1. Lấy danh sách toàn bộ user đang có trong Database
+    all_users = db.query(User).all()
+    users_seeded = 0
+
+    mock_products = [
+        {
+            "sku": "SKU-001", "name": "Chuột Gaming Không Dây X Pro", "category": "Electronics", 
+            "stock": 145, "unitCost": 45.00, "supplier": "TechGear VN", 
+            "imageUrl": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=400&q=80" # Ảnh chuột Gaming đen
+        },
+        {
+            "sku": "SKU-002", "name": "Bàn Phím Cơ RGB Blue Switch", "category": "Electronics", 
+            "stock": 8, "unitCost": 85.00, "supplier": "KeyChron", 
+            "imageUrl": "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=400&q=80" # Ảnh bàn phím cơ RGB
+        },
+        {
+            "sku": "SKU-003", "name": "Ghế Công Thái Học Ergonomic", "category": "Furniture", 
+            "stock": 12, "unitCost": 220.00, "supplier": "HomeFit", 
+            "imageUrl": "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?auto=format&fit=crop&w=400&q=80" # Ảnh ghế xoay văn phòng
+        },
+        {
+            "sku": "SKU-004", "name": "Cáp Sạc Nhanh Type-C 100W", "category": "Accessories", 
+            "stock": 450, "unitCost": 8.50, "supplier": "PowerTech", 
+            "imageUrl": "https://images.unsplash.com/photo-1624823183547-4148e65af9bb?auto=format&fit=crop&w=400&q=80" # Ảnh dây cáp sạc
+        },
+        {
+            "sku": "SKU-005", "name": "Tai Nghe Chống Ồn Chủ Động ANC", "category": "Electronics", 
+            "stock": 4, "unitCost": 199.99, "supplier": "AudioMotive", 
+            "imageUrl": "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=400&q=80" # Ảnh tai nghe chụp tai Sony
+        },
+        {
+            "sku": "SKU-006", "name": "Giá Đỡ Laptop Hợp Kim Nhôm", "category": "Accessories", 
+            "stock": 85, "unitCost": 25.00, "supplier": "DeskSetup", 
+            "imageUrl": "https://images.unsplash.com/photo-1611078449933-289b4f9712ed?auto=format&fit=crop&w=400&q=80" # Ảnh chân đế laptop
+        },
+        {
+            "sku": "SKU-007", "name": "Màn Hình Siêu Rộng UltraWide 34-inch", "category": "Electronics", 
+            "stock": 3, "unitCost": 450.00, "supplier": "VisionDisplays", 
+            "imageUrl": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=400&q=80" # Ảnh màn hình Ultrawide cong
+        },
+        {
+            "sku": "SKU-008", "name": "Webcam Livestream 1080p 60fps", "category": "Accessories", 
+            "stock": 120, "unitCost": 55.00, "supplier": "StreamGear", 
+            "imageUrl": "https://images.unsplash.com/photo-1620288544837-2cd98c25dbbb?auto=format&fit=crop&w=400&q=80" # Ảnh ống kính/Webcam
+        },
+        {
+            "sku": "SKU-009", "name": "Bàn Làm Việc Đứng Smart Desk", "category": "Furniture", 
+            "stock": 15, "unitCost": 350.00, "supplier": "HomeFit", 
+            "imageUrl": "https://images.unsplash.com/photo-1595514535415-8aeed30721eb?auto=format&fit=crop&w=400&q=80" # Ảnh bàn đứng chỉnh điện
+        },
+        {
+            "sku": "SKU-010", "name": "Loa Bluetooth Mini Chống Nước", "category": "Electronics", 
+            "stock": 210, "unitCost": 35.00, "supplier": "AudioMotive", 
+            "imageUrl": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=400&q=80" # Ảnh loa Bluetooth xách tay
+        }
+    ]
+
+    for user in all_users:
+        # 2. Kiểm tra xem user này đã có sản phẩm nào chưa
+        existing_products_count = db.query(Product).filter(Product.user_id == user.id).count()
+        
+        # Nếu kho của họ đang trống (chưa có sản phẩm), thì mới tiến hành bơm dữ liệu
+        if existing_products_count == 0:
+            for item in mock_products:
+                new_product = Product(
+                    user_id=user.id,
+                    sku=item["sku"],
+                    name=item["name"],
+                    category=item["category"],
+                    stock=item["stock"],      # NHỚ KIỂM TRA TÊN CỘT: stock hay currentStock?
+                    unitCost=item["unitCost"],
+                    supplier=item["supplier"],
+                    imageUrl=item["imageUrl"] # NHỚ KIỂM TRA TÊN CỘT: imageUrl hay image?
+                )
+                db.add(new_product)
+            users_seeded += 1
+
+    # 3. Lưu toàn bộ xuống Database
+    try:
+        db.commit()
+        return {"status": "success", "message": f"Đã bơm thành công 10 sản phẩm mẫu cho {users_seeded} user!"}
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": f"Có lỗi xảy ra: {str(e)}"}
