@@ -29,8 +29,21 @@ class GoogleAuthRequest(BaseModel):
     credential: str
 
 app = FastAPI()
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    "postgresql://postgres:Huychuyentin1%40@db.wbdyhovdpjpmrbojhrsi.supabase.co:5432/postgres"
+)
+# Fix lỗi tương thích của SQLAlchemy với chữ postgres://
+if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# "Chìa khóa" mở kết nối Database cho mỗi lần gọi API
+# 2. Khởi tạo Engine cho PostgreSQL 
+# (Đã XÓA connect_args={"check_same_thread": False} vì nó chỉ dùng cho SQLite)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
 def get_db():
     db = SessionLocal()
     try:
