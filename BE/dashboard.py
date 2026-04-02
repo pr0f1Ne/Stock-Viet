@@ -5,6 +5,7 @@ import statistics
 import time
 import shutil
 import uuid # 1. BẮT BUỘC thêm dòng này ở đầu file
+import database
 from datetime import datetime, date, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Header, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +29,7 @@ GOOGLE_CLIENT_ID = "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleuse
 # Class nhận token từ Frontend
 class GoogleAuthRequest(BaseModel):
     credential: str
-
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL", 
