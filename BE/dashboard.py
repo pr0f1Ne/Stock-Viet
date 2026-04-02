@@ -32,7 +32,7 @@ class GoogleAuthRequest(BaseModel):
 app = FastAPI()
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "postgresql://postgres:Huychuyentin1%40@db.wbdyhovdpjpmrbojhrsi.supabase.co:5432/postgres"
+    "postgresql://postgres.wbdyhovdpjpmrbojhrsi: Huychuyentin1%40@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
 )
 # Fix lỗi tương thích của SQLAlchemy với chữ postgres://
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
