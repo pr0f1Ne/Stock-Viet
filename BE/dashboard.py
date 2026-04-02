@@ -23,6 +23,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 # CHỈ IMPORT TỪ DATABASE, TUYỆT ĐỐI KHÔNG ĐỊNH NGHĨA LẠI BẢNG Ở ĐÂY
 from database import SessionLocal, Product, Sale, Order, User
+from database import engine
 
 GOOGLE_CLIENT_ID = "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleusercontent.com"
 
