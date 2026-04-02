@@ -25,6 +25,18 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from database import SessionLocal, Product, Sale, Order, User
 from database import engine
 
+@app.get("/api/admin/create-tables")
+async def force_create_tables():
+    """
+    API dùng 1 lần để ép SQLAlchemy tạo toàn bộ các bảng đang thiếu trên Supabase.
+    """
+    try:
+        # Lệnh này sẽ quét toàn bộ class trong models và xây bảng tương ứng
+        database.Base.metadata.create_all(bind=engine)
+        return {"status": "success", "message": "Đã tạo xong toàn bộ bảng (users, products,...) trên Supabase!"}
+    except Exception as e:
+        return {"status": "error", "message": f"Lỗi khi tạo bảng: {str(e)}"}
+
 GOOGLE_CLIENT_ID = "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleusercontent.com"
 
 # Class nhận token từ Frontend
