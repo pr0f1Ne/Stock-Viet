@@ -29,7 +29,7 @@ GOOGLE_CLIENT_ID = "233853391733-q9tj0draq8mqo0paemdfnt8apnu11nej.apps.googleuse
 # Class nhận token từ Frontend
 class GoogleAuthRequest(BaseModel):
     credential: str
-models.Base.metadata.create_all(bind=engine)
+database.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL", 
